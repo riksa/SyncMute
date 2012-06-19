@@ -17,4 +17,18 @@
 
 <resources>
     <string name="app_name">SyncMute</string>
+
+    <!-- Preferences Username -->
+    <string name="preferences_username_title">Username</string>
+    <string name="preferences_username_summary">Username</string>
+    <string name="preferences_username_hint">Username</string>
+
+    <!-- Preferences Channel -->
+    <string name="preferences_channel_title">Channel</string>
+    <string name="preferences_channel_summary">Channel</string>
+    <string name="preferences_channel_hint">Channel</string>
+
+    <!-- Menu items -->
+    <string name="menu_preferences">Preferences</string>
+
 </resources>

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <!--
   ~ Copyright 2012 Riku Salkia <riksa@iki.fi>
   ~
@@ -15,19 +16,10 @@
   ~    limitations under the License.
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.riksa.syncmute"
-          android:versionCode="1"
-          android:versionName="1.0">
-    <uses-sdk android:minSdkVersion="8"/>
-    <application android:label="@string/app_name">
-        <activity android:name="ConfigActivity"
-                  android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
-        <activity android:name=".SyncMutePreferencesActivity"/>
-    </application>
-</manifest> 
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_preferences"
+              android:icon="@drawable/ic_menu_preferences"
+              android:title="@string/menu_preferences"
+              android:showAsAction="ifRoom" />
+
+</menu>

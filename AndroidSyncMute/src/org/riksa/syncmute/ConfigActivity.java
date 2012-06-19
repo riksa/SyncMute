@@ -17,15 +17,68 @@
 package org.riksa.syncmute;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
-public class ConfigActivity extends Activity
-{
-    /** Called when the activity is first created. */
+public class ConfigActivity extends Activity {
+
+    /**
+     * Preferences instance
+     */
+    private SharedPreferences sharedPreferences;
+
+    /**
+     * Called when the activity is first created.
+     */
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        // TODO: check if launched for the first time and show some sort of quick Getting started -dialog
+    }
+
+    /**
+     * Creates options menu
+     * @param menu
+     * @return
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    /**
+     * Handle selection of a menu item
+     * @param item
+     * @return
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_preferences:
+                startActivity(new Intent(this, SyncMutePreferencesActivity.class));
+                break;
+            default:
+                break;
+        }
+        return true;    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    /**
+     * Handle change in configuration
+     * @param newConfig
+     */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);    //To change body of overridden methods use File | Settings | File Templates.
     }
 }
