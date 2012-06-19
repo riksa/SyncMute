@@ -1,12 +1,32 @@
+<!--
+  ~ SyncMute: Application for synchronized muting/unmuting of devices.
+  ~ Copyright (c) 2012 Riku Salkia <riksa@iki.fi>
+  ~
+  ~ TODO: Choose license
+  -->
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
     <title>SyncMute test</title>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="js/syncmute.js"></script>
+
+    <script type = "text/javascript">
+        $(document).ready(function()
+        {
+            Syncmute.init("foo", "bar");
+            Syncmute.bind("#toggle1");
+            Syncmute.bind("#toggle2");
+        });
+    </script>
+
 </head>
 <body>
 
-<img src="images/on.png"/>
+<img class="syncmute" alt="On" id="toggle1" src="images/off.png" />
+<img class="syncmute" data-on="images/on_alt.png" data-off="images/off_alt.png" src="images/on_alt.png" alt="On" id="toggle2" />
 
 </body>
 </html>
