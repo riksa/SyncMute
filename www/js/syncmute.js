@@ -14,6 +14,22 @@
  *    limitations under the License.
  */
 
+var ChannelState = Parse.Object.extend("ChannelState");
+//{
+//    // Class methods
+//    initialize:function (channel, state) {
+//        var channelState = new ChannelState();
+//        channelState.set("channel", channel);
+//        channelState.set("state", !!state);
+//        return channelState;
+//    }
+//}, {
+//    // Instance methods
+//    getState:function () {
+//        return !!this.get("state");
+//    }
+//});
+//
 var Syncmute = {
     appId:"",
     key:"",
@@ -27,14 +43,56 @@ var Syncmute = {
         this.state_on = true; //TODO: From parse
         console.log("APPLICATION_ID: " + APPLICATION_ID);
         console.log("JAVASCRIPT_KEY: " + JAVASCRIPT_KEY);
+        Parse.initialize(APPLICATION_ID, JAVASCRIPT_KEY);
+        this.getChannelState(this.getChannelName(),
+            function (channelState) {
+                console.log(channelState.get("state"));
+            },
+            function (channelState, error) {
+            }
+        );
     },
-    bind: function( id ) {
-        this.setState( id );
-        $(id).click( Syncmute.toggle );
+    getChannelState:function (channel, successCallback, errorCallback) {
+        var self = this;
+        var query = new Parse.Query(ChannelState);
+        query.equalTo("channel", channel);
+        query.find({
+            success:function (results) {
+                if (results.length == 0) {
+                    var channelState = new ChannelState();
+                    channelState.save({
+                            channel:channel,
+                            state:true
+                        },
+                        {
+                            success:successCallback,
+                            error:errorCallback
+                        }
+                    );
+                } else {
+                    successCallback(results[0]);
+                }
+            },
+            error:function (error) {
+                alert("Error: " + error.code + " " + error.message);
+            }
+        });
     },
-    setState: function( id ) {
+    setChannelState:function (channelState, newState, successCallback, errorCallback) {
+        channelState.set("state", newState);
+        channelState.save(null, {
+                success:successCallback,
+                error:errorCallback
+            }
+        );
+    },
+    bind:function (id) {
+        this.setState(id);
+        $(id).click(Syncmute.toggle);
+    },
+    setState:function (id) {
         // TODO: set state
-        $(id).attr("src", function() {
+        $(id).attr("src", function () {
             var src;
             if (Syncmute.state_on) {
                 src = $(this).attr('data-on');
@@ -47,10 +105,26 @@ var Syncmute = {
         });
     },
     toggle:function () {
-        Syncmute.state_on = !Syncmute.state_on;
+        var channel = Syncmute.getChannelName();
+        Syncmute.getChannelState(channel,
+            function (channelState) {
+                var state = !!channelState.get("state");
+                console.log("state: " + state);
+                Syncmute.setChannelState(channelState, !state, function (newChannelState) {
+                    var newState = !!newChannelState.get("state");
+                    console.log("newState: " + newState);
+                    Syncmute.setImagesTo(newState);
+                });
+            },
+            function (channelState, error) {
+                console.log(error);
+            }
+        );
+    },
+    setImagesTo:function (state) {
         $("img.syncmute").attr("src", function () {
             var src;
-            if (Syncmute.state_on) {
+            if (!!state) {
                 src = $(this).attr('data-on');
                 if (typeof src === 'undefined') src = Syncmute.image_on;
             } else {
@@ -59,6 +133,9 @@ var Syncmute = {
             }
             return src;
         });
+    },
+    getChannelName:function () {
+        return "JORMA"; // TODO: Salted hash from username+channelname
     }
 
 }
