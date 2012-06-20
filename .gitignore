@@ -19,3 +19,6 @@ local.properties
 # Idea
 .idea/
 *.iml
+
+# Ignore credentials for now, I don't want to share them yet. I might need to have a app specific Parse account or something.
+www/js/parsecredentials.js

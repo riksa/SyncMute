@@ -25,6 +25,8 @@ var Syncmute = {
         this.appId = appId;
         this.key = key;
         this.state_on = true; //TODO: From parse
+        console.log("APPLICATION_ID: " + APPLICATION_ID);
+        console.log("JAVASCRIPT_KEY: " + JAVASCRIPT_KEY);
     },
     bind: function( id ) {
         this.setState( id );
