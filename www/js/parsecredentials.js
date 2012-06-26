@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 var APPLICATION_ID = "9QfueNAxIUQXV91iCzrzGu4FfMoi4Z6MXRAho3qk";
 var JAVASCRIPT_KEY = "cMbn4IZIJdMdv6Ado2Stoq2gpJZ6Vom8tFf1mJVI";
 
