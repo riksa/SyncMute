@@ -18,10 +18,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
-    <ImageView android:id="@+id/channel_state"
-               android:layout_width="fill_parent"
-               android:layout_height="fill_parent"
-               android:src="@drawable/channel_state_drawable"/>
+    <ImageButton android:id="@+id/channel_state"
+                 android:layout_width="fill_parent"
+                 android:layout_height="fill_parent"
+                 android:onClick="onToggleButtonClicked"
+                 android:src="@drawable/channel_state_drawable"
+                 android:background="@null"
+                 android:scaleType="centerInside"/>
 
 
 </RelativeLayout>

@@ -17,32 +17,38 @@
 package org.riksa.syncmute;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.content.res.Configuration;
-import android.nfc.Tag;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TabHost;
-import com.parse.*;
 
-import java.util.List;
-
+/**
+ * Activity for accessing configuration
+ */
 public class ConfigActivity extends Activity {
 
     /**
-     * Preferences instance
+     * {@link SharedPreferences} instance
      */
     private SharedPreferences sharedPreferences;
-    private static final String TAG = "SyncMute_ConfigActivity";
-    private static final long POLL_DELAY = 1000;
+    private static final String TAG = "SyncMute-ConfigActivity";
+
+    /**
+     *  State of muting. Toggled via intents from the cloud.
+     */
+    private boolean muted = false;
+
+    /**
+     * {@link BroadcastReceiver} receiving push notifications
+     */
+    private BroadcastReceiver receiver = null;
 
     /**
      * Called when the activity is first created.
@@ -52,89 +58,69 @@ public class ConfigActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        // TODO: show some tutorial on first launch, populate (or prompt) username/channel with some sane value
 
-        Parse.initialize(this, getString(R.string.parse_application_id), getString(R.string.parse_client_key));
+        ParseTools parseTools = ParseTools.getInstance(this);
+        parseTools.subscribe(parseTools.getChannel());
 
-//        ParseObject testObject = new ParseObject("SyncMuteTest");
-//        testObject.put("mute", "on");
-//        testObject.saveInBackground();
     }
-
-    private Runnable pollRunnable;
-    private Handler handler = new Handler();
 
     /**
-     * Polling for debug purposes, TODO: push version
+     * Initializes mute button icon to correct state
      */
-    private void debugStartPoller() {
-        final ConfigActivity configActivity = this;
-
-        if (pollRunnable == null) {
-            pollRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    ParseQuery query = new ParseQuery("ChannelState").whereEqualTo("channel", getChannel());
-                    query.setLimit(1);
-                    query.findInBackground(new FindCallback() {
-                        @Override
-                        public void done(List<ParseObject> parseObjects, ParseException e) {
-                            //To change body of implemented methods use File | Settings | File Templates.
-                            if (e == null) {
-                                for (ParseObject parseObject : parseObjects) {
-                                    Object value = parseObject.get("state");
-                                    if (value instanceof Boolean) {
-                                        Boolean state = (Boolean)value;
-                                        if( state == null ) state = false;
-                                        setChannelState(state.booleanValue());
-                                    }
-                                }
-                            } else {
-                                Log.d(TAG, "Error: " + e.getMessage());
-                            }
-                            handler.postDelayed(pollRunnable, POLL_DELAY);
-                        }
-                    });
-                }
-            };
-            handler.post(pollRunnable);
-        }
-    }
-
-    private void setChannelState(boolean stateOn) {
+    private void toggleMuteIcon() {
         View view = findViewById(R.id.channel_state);
-        if( view instanceof ImageView ) {
+        if (view instanceof ImageView) {
             ImageView imageView = (ImageView) view;
 
-            if( stateOn ) {
-                imageView.setImageLevel(1);
-            } else {
+            if (muted) {
                 imageView.setImageLevel(0);
+            } else {
+                imageView.setImageLevel(1);
             }
 
         }
     }
 
-    private void debugStopPoller() {
-        if (pollRunnable != null) {
-            handler.removeCallbacks( pollRunnable );
-            pollRunnable = null;
-        }
-    }
-
+    /**
+     * Register receiver, set button to correct state on resume
+     */
     @Override
     protected void onResume() {
         super.onResume();    //To change body of overridden methods use File | Settings | File Templates.
-        debugStartPoller();
+        ParseTools parseTools = ParseTools.getInstance(this);
+        String channel = parseTools.getChannel();
+        muted = parseTools.getMuteState(channel);
+        toggleMuteIcon();
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(SyncMuteBroadcastReceiver.MUTE_ON_STATE);
+        intentFilter.addAction(SyncMuteBroadcastReceiver.MUTE_OFF_STATE);
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (SyncMuteBroadcastReceiver.MUTE_ON_STATE.equals(intent.getAction())) {
+                    muted = true;
+                } else if (SyncMuteBroadcastReceiver.MUTE_OFF_STATE.equals(intent.getAction())) {
+                    muted = false;
+                }
+                toggleMuteIcon();
+            }
+        };
+
+        registerReceiver(receiver, intentFilter);
     }
 
+    /**
+     * Unregister receiver when paused
+     */
     @Override
     protected void onPause() {
         super.onPause();    //To change body of overridden methods use File | Settings | File Templates.
-        debugStopPoller();
-    }
-
-    private String getChannel() {
-        return "JORMA";  //To change body of created methods use File | Settings | File Templates.
+        if( receiver != null ) {
+            unregisterReceiver(receiver);
+            receiver = null;
+        }
     }
 
     /**
@@ -177,4 +163,21 @@ public class ConfigActivity extends Activity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);    //To change body of overridden methods use File | Settings | File Templates.
     }
+
+    /**
+     * Handle toggling of muting on/off
+     * @param view
+     */
+    public void onToggleButtonClicked(View view) {
+        if (view instanceof ImageButton) {
+            Intent intent = new Intent();
+            // if device is currently muted, send unmute command. otherwise, send mute command
+            intent.setAction(muted ? SyncMuteBroadcastReceiver.MUTE_OFF_COMMAND : SyncMuteBroadcastReceiver.MUTE_ON_COMMAND);
+            sendBroadcast(intent);
+
+            Log.d(TAG, "onToggleButtonClicked ");
+        }
+
+    }
+
 }
